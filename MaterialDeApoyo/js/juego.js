@@ -4,7 +4,10 @@ var timer = 0;
 var delay = 400;
 var fondoJuego;
 var aparecer;
-
+var puntos;
+var vidas;
+var txtPuntos;
+var txtVidas;
 
 var Iniciar = {
 
@@ -16,7 +19,6 @@ var Iniciar = {
     },
     create: function() {
         fondoJuego = juego.add.tileSprite(0, 0, 400, 540, 'bg');
-        //juego.add.tileSprite(0,0,400,540,'bg');
 
         nave = juego.add.sprite(40, juego.height / 2, 'nave');
         nave.anchor.setTo(0.5);
@@ -46,27 +48,41 @@ var Iniciar = {
         malos.setAll('checkWorldBounds', true);
         malos.setAll('outOfBoundsKill', true);
 
+        ///crear enemigos
+        aparecer = juego.time.events.loop(1000, this.crearEnemigos, this);
 
-        aparecer = juego.time.events.loop(1500, this.crearEnemigos, this);
-
+        ///fix para disparar con un clic
         fondoJuego.inputEnabled = true;
         fondoJuego.events.onInputDown.add(this.disparar, this);
+
+        ///puntajes
+        puntos = 0;
+        juego.add.text(20, 20, "Puntos", { font: "14px Arial", fill: "#FFF" });
+        txtPuntos = juego.add.text(80, 20, "0", { font: "14px Arial", fill: "#FFF" });
+
+        ///vidas
+        vidas = 5;
+        juego.add.text(120, 20, "Vidas", { font: "14px Arial", fill: "#FFF" });
+        txtVidas = juego.add.text(180, 20, "5", { font: "14px Arial", fill: "#FFF" });
 
     },
     update: function() {
         fondoJuego.tilePosition.x -= 3;
 
         nave.rotation = juego.physics.arcade.angleToPointer(nave);
-        //disparar Balas
-
-        // if (juego.input.activePointer.isDown) {
-        //     console.error('disparo');
-        //     setTimeout(this.disparar(), 500);
-        // }
-
-
-
         juego.physics.arcade.overlap(balas, malos, this.colision, null, this);
+
+        ///
+        malos.forEachAlive(function(m) {
+            if (m.position.x > 10 && m.position.x < 12) {
+                vidas -= 1;
+                txtVidas.text = vidas;
+            }
+        });
+
+        if (vidas == 0) {
+            juego.state.start("Terminado");
+        }
     },
     //disparar una sola bala
     disparar: function() {
@@ -74,9 +90,6 @@ var Iniciar = {
         timer = juego.time.now + delay;
         var bala = balas.getFirstDead();
 
-        // console.log(timer);
-        // console.log(balas.countDead());
-        // console.log(juego.time.now);
         if (
             //juego.time.now > timer &&
             balas.countDead() > 0) {
@@ -102,6 +115,8 @@ var Iniciar = {
         bala.kill();
         malo.kill();
 
+        puntos++;
+        txtPuntos.text = puntos;
     }
 
 
